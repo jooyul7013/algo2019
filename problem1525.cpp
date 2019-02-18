@@ -1,157 +1,128 @@
 #include <iostream>
+#include <algorithm>
+#include <string>
+#include <queue>
+#include <set>
 #include <vector>
 
 using namespace std;
-vector<int*> v;
-int arr[9] = {0};
-int flag = 99999;
-int vectorsize = 0;
 
-bool check()
-{
-	for(int i=0; i<8; i++)
-	{
-		if(arr[i]==i+1)
-			continue;
-		else
-			return false;
-	}
-	return true;
-}
 
-bool vectorcheck()
-{
-	bool visit = false;
-	int count;
-	for(int i = 0; i<vectorsize; i++)
-	{
-		count  = 0;
-		for(int j=0; j<9; j++)
-		{
-			if(v[i][j] == arr[j])
-			{
-				count++;
-			}
-			if(count == 9)
-			{
-				visit =  true;
-			}
-		}
-	}
-	return visit;
-}
+typedef struct puzzle{
+    string str;
+    int depth;
+}puzzle;
 
-void DFS(int count)
+queue<puzzle> q;
+set<string> v;
+string answer = "123456780";
+int result = -1;
+
+bool checkVisit(string s)
 {
-	int tmp;
-	//cout<<count<<endl;
-	if(check() == true)
-	{
-		flag = count;
-		return;
+    if(v.find(s)==v.end())
+    {
+    	return false;
 	}
-	
-	for(int i=0; i<9; i++)
+	else
 	{
-		if(arr[i] == 0)//checkpoint
-		{
-			if(i!=0&&i!=3&&i!=6)
-			{
-				tmp = arr[i-1];
-				arr[i-1] = 0;
-				arr[i] = tmp;//swap
-				
-				if(vectorcheck()==false)
-				{
-					int tmparr[9] = {0};
-					for(int j =0; j<9; j++)
-					{
-						tmparr[j] = arr[j];
-					}
-					v.push_back(tmparr);
-					vectorsize++;
-					DFS(count+1);
-				}
-				arr[i-1] = tmp;
-				arr[i] = 0;
-			}
-			if(i>2)
-			{
-				tmp = arr[i-3];
-				arr[i-3] = 0;
-				arr[i] = tmp;//swap
-				
-				if(vectorcheck()==false)
-				{
-					int tmparr[9] = {0};
-					for(int j =0; j<9; j++)
-					{
-						tmparr[j] = arr[j];
-					}
-					v.push_back(tmparr);
-					vectorsize++;
-					DFS(count+1);
-				}
-				arr[i-3] = tmp;
-				arr[i] = 0;
-			}
-			if(i!=8&&i!=5&&i!=2)
-			{
-				tmp = arr[i+1];
-				arr[i+1] = 0;
-				arr[i] = tmp;//swap
-				
-				if(vectorcheck()==false)
-				{
-					int tmparr[9] = {0};
-					for(int j =0; j<9; j++)
-					{
-						tmparr[j] = arr[j];
-					}
-					v.push_back(tmparr);
-					vectorsize++;
-					DFS(count+1);
-				}
-				arr[i+1] = tmp;
-				arr[i] = 0;
-			}
-			if(i<6)
-			{
-				tmp = arr[i+3];
-				arr[i+3] = 0;
-				arr[i] = tmp;//swap
-				
-				if(vectorcheck()==false)
-				{
-					int tmparr[9] = {0};
-					for(int j =0; j<9; j++)
-					{
-						tmparr[j] = arr[j];
-					}
-					v.push_back(tmparr);
-					vectorsize++;
-					DFS(count+1);
-				}
-				arr[i+3] = tmp;
-				arr[i] = 0;
-			}
-		}
+		return true;
 	}
 }
 
-
+void BFS()
+{
+    puzzle tmp;
+    while(!q.empty())
+    {
+        puzzle p = q.front();
+        q.pop();
+        char c;
+        if(p.str == answer)//정답을 찾은 경우
+        {
+				result = p.depth;
+            	return;
+        }
+        
+        //위로 옮길때
+        for(int i=0; i<9; i++)
+        {
+            if(p.str[i] == '0')//0을 찾은 경우
+            {
+                //위
+                if(i>2)//위로 옮길 수 있다면
+                {
+                    tmp = p;
+                    c = tmp.str[i];
+                    tmp.str[i] = tmp.str[i-3];
+                    tmp.str[i-3] = c;
+                    tmp.depth++;
+                    if(checkVisit(tmp.str)==false)
+                    {
+                        q.push(tmp);
+                        v.insert(tmp.str);
+                    }
+                }
+                //아래
+                if(i<6)
+                {
+                    tmp = p;
+                    c = tmp.str[i];
+                    tmp.str[i] = tmp.str[i+3];
+                    tmp.str[i+3] = c;
+                    tmp.depth++;
+                    if(checkVisit(tmp.str)==false)
+                    {
+                        q.push(tmp);
+                        v.insert(tmp.str);
+                    }
+                }
+                if(i%3!=0)
+                {
+                    tmp = p;
+                    c = tmp.str[i];
+                    tmp.str[i] = tmp.str[i-1];
+                    tmp.str[i-1] = c;
+                    tmp.depth++;
+                    if(checkVisit(tmp.str)==false)
+                    {
+                        q.push(tmp);
+                        v.insert(tmp.str);
+                    }
+                }
+                if(i%3!=2)
+                {
+                    tmp = p;
+                    c = tmp.str[i];
+                    tmp.str[i] = tmp.str[i+1];
+                    tmp.str[i+1] = c;
+                    tmp.depth++;
+                    if(checkVisit(tmp.str)==false)
+                    {
+                        q.push(tmp);
+                        v.insert(tmp.str);
+                    }
+                }    
+                break;
+            }
+        }
+        
+    }
+    
+}
 
 int main(void)
 {
-	int tmparr[9] = {0};
-	for(int i=0; i<9; i++)
-	{
-		cin>>arr[i];
-		tmparr[i] = arr[i];
-	}
-	v.push_back(tmparr);
-	vectorsize++;
-	
-	DFS(0);
-	cout<<flag;	
+    puzzle p;
+    p.str = "";
+    char c;
+    for(int i=0; i<9; i++)
+    {
+        cin>>c;
+        p.str.push_back(c);
+    }
+    p.depth = 0;
+    q.push(p);
+    BFS();
+    cout<<result;
 }
